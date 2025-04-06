@@ -1,35 +1,116 @@
-# Learning-Resources
-This is the directory for Learning Resources. Feel free to forkence
-================== Keep on extending with informations and blog post from  https://codingdummies.wordpress.com/ ========================
+================== Content from recent learning =====================
 
-# CodeQL 101: Write Code to Find Vulnerabilities in Code
+# CodeQL 101 – Find Vulnerabilities in Your Codebase
 
-Welcome to **CodeQL** — a powerful static analysis tool that lets you write queries to explore your codebase like a database. Whether you're looking to spot vulnerabilities, enforce coding standards, or just understand your code better, CodeQL is your go-to toolkit.
+Welcome to **CodeQL** — a powerful static analysis tool that lets you query your codebase like a database. This README will help you get started with CodeQL using the CLI and GitHub Actions.
 
 ---
 
-## What Is CodeQL?
+## What is CodeQL?
 
-**CodeQL** allows you to query your code like data. It converts your code into a relational database and lets you write custom queries using a special language called QL.
+CodeQL allows you to:
 
-Use cases include:
+- Query code as data
+- Detect vulnerabilities (like SQL injection, buffer overflows)
+- Enforce secure coding practices
+- Understand and explore code structure
 
-- Detecting security vulnerabilities (e.g., SQL injection, XSS)
-- Enforcing architecture rules
-- Detecting code smells or legacy patterns
+It works by converting source code into a database, which you can analyze with a custom query language called QL.
 
 ---
 
-## Getting Started
+## Installation
 
-### 1. Install the CodeQL CLI
+Download the CodeQL CLI from:
 
-Download it from the [official release page](https://github.com/github/codeql-cli-binaries/releases), or use it through GitHub Actions if you're working in a public repo.
+👉 https://github.com/github/codeql-cli-binaries/releases
 
-### 2. Create a CodeQL Database
+Unzip and add the binary to your PATH.
 
-For example, to analyze a C++ project:
+To verify:
+
+```bash
+codeql --version
+```
+
+---
+
+## Creating a CodeQL Database
+
+To analyze a C++ project, run:
 
 ```bash
 codeql database create my-db --language=cpp --command="make"
+```
 
+Replace `make` with your project’s build command.
+
+This command:
+- Runs your build
+- Monitors the process
+- Creates a database `my-db` that CodeQL can analyze
+
+---
+
+## Writing and Running a Query
+
+Create a file `find-strcpy.ql` with this content:
+
+```ql
+import cpp
+
+from Function f
+where f.getName() = "strcpy"
+select f, "Avoid using unsafe function strcpy"
+```
+
+Run the query:
+
+```bash
+codeql query run find-strcpy.ql --database=my-db
+```
+
+This will return all places in the code where `strcpy` is used.
+
+---
+
+## GitHub Actions Setup
+
+If your repo is hosted on GitHub, create a file at `.github/workflows/codeql.yml`:
+
+```yaml
+name: CodeQL Analysis
+
+on: [push, pull_request]
+
+jobs:
+  analyze:
+    name: Analyze code
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+    steps:
+      - uses: actions/checkout@v3
+      - uses: github/codeql-action/init@v2
+        with:
+          languages: cpp
+      - uses: github/codeql-action/analyze@v2
+```
+
+This will automatically run CodeQL on every push and PR.
+
+---
+
+## Useful Tools
+
+- [CodeQL VS Code Extension](https://marketplace.visualstudio.com/items?itemName=GitHub.vscode-codeql)
+- [Standard Query Library](https://github.com/github/codeql)
+- [CodeQL Docs](https://codeql.github.com/docs/)
+
+---
+
+## Final Notes
+
+CodeQL is an excellent tool to improve your code's safety and quality. Start small with simple queries, and gradually build your own security rules.
+
+Happy querying! 🧪
